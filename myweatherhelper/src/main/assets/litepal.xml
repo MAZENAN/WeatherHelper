@@ -1,0 +1,9 @@
+<litepal>
+    <dbname value="weather_helper"/>
+    <version value="1"/>
+    <list>
+        <mapping class="com.demo.yufan.myweatherhelper.db.Province"/>
+        <mapping class="com.demo.yufan.myweatherhelper.db.City"/>
+        <mapping class="com.demo.yufan.myweatherhelper.db.County"/>
+    </list>
+</litepal>
