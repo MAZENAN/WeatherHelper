@@ -5,6 +5,8 @@ import android.text.TextUtils;
 import com.demo.yufan.myweatherhelper.db.City;
 import com.demo.yufan.myweatherhelper.db.County;
 import com.demo.yufan.myweatherhelper.db.Province;
+import com.demo.yufan.myweatherhelper.gson.WeatherInfo;
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -78,5 +80,10 @@ public class Utility {
             }
         }
         return false;
+    }
+    public static WeatherInfo handleWeatherResponse(String response){
+        Gson gson = new Gson();
+        WeatherInfo weatherInfo = gson.fromJson(response, WeatherInfo.class);
+        return weatherInfo;
     }
 }
