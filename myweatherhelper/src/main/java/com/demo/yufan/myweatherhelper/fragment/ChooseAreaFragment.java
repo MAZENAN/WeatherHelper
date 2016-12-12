@@ -226,7 +226,13 @@ public class ChooseAreaFragment extends Fragment {
             public void onFailure(Call call, IOException e) {
                 //加载失败，切换到主线程关闭对话框
                 closeDialog();
-                Toast.makeText(getContext(), "查询失败", Toast.LENGTH_SHORT).show();
+                runOnUIThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getContext(), "查询失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
             }
 
             @Override

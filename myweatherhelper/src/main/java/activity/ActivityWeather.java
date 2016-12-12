@@ -144,7 +144,7 @@ public class ActivityWeather extends AppCompatActivity {
         });
     }
 
-    public void requestWeather(String weatherId) {
+    public void requestWeather(final String weatherId) {
         String weatherUrl = MyUrl.WEATHER_SERVER + "cityid=" + weatherId + "&key=" + MyUrl.WEATHER_KEY;
         HttpUtil.sendHttpRequest(weatherUrl, new Callback() {
             @Override
@@ -172,6 +172,7 @@ public class ActivityWeather extends AppCompatActivity {
                             editor.apply();
                             showWeatherInfo(weatherInfo);
                             Toast.makeText(ActivityWeather.this, "已更新", Toast.LENGTH_SHORT).show();
+                            mWeather_id = weatherId;
                         } else {
                             Toast.makeText(ActivityWeather.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
@@ -189,6 +190,7 @@ public class ActivityWeather extends AppCompatActivity {
         WeatherInfo.HeWeatherBean.BasicBean basic = heWeatherBean.getBasic();
         WeatherInfo.HeWeatherBean.AqiBean aqi = heWeatherBean.getAqi();
         List<WeatherInfo.HeWeatherBean.DailyForecastBean> daily_forecast = heWeatherBean.getDaily_forecast();
+
         List<WeatherInfo.HeWeatherBean.HourlyForecastBean> hourly_forecast = heWeatherBean.getHourly_forecast();
         WeatherInfo.HeWeatherBean.NowBean now = heWeatherBean.getNow();
         WeatherInfo.HeWeatherBean.SuggestionBean suggestion = heWeatherBean.getSuggestion();
