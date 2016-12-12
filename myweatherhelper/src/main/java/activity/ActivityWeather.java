@@ -1,15 +1,16 @@
 package activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -23,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.demo.yufan.myweatherhelper.R;
 import com.demo.yufan.myweatherhelper.global.MyUrl;
 import com.demo.yufan.myweatherhelper.gson.WeatherInfo;
+import com.demo.yufan.myweatherhelper.service.AutoUpdateService;
 import com.demo.yufan.myweatherhelper.util.HttpUtil;
 import com.demo.yufan.myweatherhelper.util.Utility;
 
@@ -114,7 +116,7 @@ public class ActivityWeather extends AppCompatActivity {
         btnChooseArea.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDrawer.openDrawer(Gravity.START);
+                mDrawer.openDrawer(GravityCompat.START);
             }
         });
     }
@@ -225,5 +227,9 @@ public class ActivityWeather extends AppCompatActivity {
         mTvCarWash.setText(carWash);
         mTvSport.setText(sport);
         mSc.setVisibility(View.VISIBLE);
+        if(weatherInfo!=null&&"ok".equals(weatherInfo.getHeWeather().get(0).getStatus())){
+            Intent intent = new Intent(this, AutoUpdateService.class);
+            startService(intent);
+        }
     }
 }
