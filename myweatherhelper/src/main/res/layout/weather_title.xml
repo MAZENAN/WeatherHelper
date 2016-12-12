@@ -2,6 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="?attr/actionBarSize">
+    <Button
+        android:id="@+id/btn_choose_area"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/ic_more"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="15dp"
+        android:layout_centerVertical="true"/>
     <TextView
         android:id="@+id/tv_weather_city"
         android:layout_width="wrap_content"

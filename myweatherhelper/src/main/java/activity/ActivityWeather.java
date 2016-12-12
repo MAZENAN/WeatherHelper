@@ -6,9 +6,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -46,14 +50,18 @@ public class ActivityWeather extends AppCompatActivity {
     private TextView mTvCarWash;
     private TextView mTvSport;
     private ImageView pic;
+    public SwipeRefreshLayout sw;
+    private String mWeather_id;
+    private Button btnChooseArea;
+    public DrawerLayout mDrawer;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(Build.VERSION.SDK_INT>=21){
+        if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN|View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             getWindow().setStatusBarColor(Color.TRANSPARENT);
             setContentView(R.layout.activity_weather);
         }
@@ -62,6 +70,9 @@ public class ActivityWeather extends AppCompatActivity {
 
     private void initView() {
         pic = (ImageView) findViewById(R.id.img_bac);
+        sw = (SwipeRefreshLayout) findViewById(R.id.sw);
+        btnChooseArea = (Button) findViewById(R.id.btn_choose_area);
+        mDrawer = (DrawerLayout) findViewById(R.id.drawer);
         mSc = (ScrollView) findViewById(R.id.sc_weather_layout);
         mTvCity = (TextView) findViewById(R.id.tv_weather_city);
         tvUpTime = (TextView) findViewById(R.id.tv_weather_update_time);
@@ -73,17 +84,20 @@ public class ActivityWeather extends AppCompatActivity {
         mTvComfort = (TextView) findViewById(R.id.tv_sugg_comfort);
         mTvCarWash = (TextView) findViewById(R.id.tv_sugg_car_wash);
         mTvSport = (TextView) findViewById(R.id.tv_sugg_sport);
+        sw.setColorSchemeResources(R.color.colorPrimary, android.R.color.holo_green_light);
+
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weather = preferences.getString("weather", null);
         if (weather != null) {
             //解析天气
             WeatherInfo weatherInfo = Utility.handleWeatherResponse(weather);
+            mWeather_id = weatherInfo.getHeWeather().get(0).getBasic().getId();//解决了weatherid空
             showWeatherInfo(weatherInfo);
         } else {
             //查询天气
-            String weather_id = getIntent().getStringExtra("weather_id");
+            mWeather_id = getIntent().getStringExtra("weather_id");
             mSc.setVisibility(View.INVISIBLE);
-            requestWeather(weather_id);
+            requestWeather(mWeather_id);
         }
         String bing_pic = preferences.getString("bing_pic", null);
         if (bing_pic != null) {
@@ -91,6 +105,18 @@ public class ActivityWeather extends AppCompatActivity {
         } else {
             loadBingPic();
         }
+        sw.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeather_id);
+            }
+        });
+        btnChooseArea.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDrawer.openDrawer(Gravity.START);
+            }
+        });
     }
 
     private void loadBingPic() {
@@ -116,15 +142,17 @@ public class ActivityWeather extends AppCompatActivity {
         });
     }
 
-    private void requestWeather(String weatherId) {
+    public void requestWeather(String weatherId) {
         String weatherUrl = MyUrl.WEATHER_SERVER + "cityid=" + weatherId + "&key=" + MyUrl.WEATHER_KEY;
         HttpUtil.sendHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(ActivityWeather.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ActivityWeather.this, "连接失败", Toast.LENGTH_SHORT).show();
+                        sw.setRefreshing(false);
                     }
                 });
             }
@@ -141,9 +169,11 @@ public class ActivityWeather extends AppCompatActivity {
                             editor.putString("weather", responseText);
                             editor.apply();
                             showWeatherInfo(weatherInfo);
+                            Toast.makeText(ActivityWeather.this, "已更新", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(ActivityWeather.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        sw.setRefreshing(false);
                     }
                 });
             }
@@ -170,6 +200,7 @@ public class ActivityWeather extends AppCompatActivity {
         tvUpTime.setText(upTime);
         tvDegree.setText(tmp);
         tvWeatherInfo.setText(info);
+        mLloforecast.removeAllViews();//先清除之前的view
         for (WeatherInfo.HeWeatherBean.DailyForecastBean dailyForecastBean : daily_forecast) {
             View view = LayoutInflater.from(this).inflate(R.layout.weather_forecast_item, null, false);
             TextView tvDate = (TextView) view.findViewById(R.id.tv_weather_date);
